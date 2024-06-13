@@ -31,16 +31,21 @@ def get_lyrics(artist, song):
   return lyrics
 
 def main():
+  # parse arguments
   parser = argparse.ArgumentParser()
   parser.add_argument("artist", help="The artist name.")
   parser.add_argument("song", help="The song name.")
+  parser.add_argument("-p", "--path", nargs="?", const="None", help="Path to store lyrics.")
   args = parser.parse_args()
   artist, song = format_arguments(args.artist, args.song)
   lyrics = get_lyrics(artist, song)
   if lyrics:
-    f = open(f"{artist}-{song}-lyrics", "w")
-    f.write(lyrics)
-    f.close()
+    lyrics = f"{artist.title()}\n\"{args.song.title()}\"\n{lyrics}"
+    if args.path:
+      with open(f"{args.path}/{artist}-{song}-lyrics.txt", "w") as file:
+      	file.write(lyrics)
+    else:
+      print(lyrics)
     return 0
   else:
     return 1
