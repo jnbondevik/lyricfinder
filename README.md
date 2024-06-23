@@ -9,4 +9,5 @@ Simple script to retrieve lyrics for any song with selenium. Lyrics are printed 
 
 ## USAGE
 lyricfinder [-p, --path] ARTIST_NAME SONG_NAME
+
 [OPTIONAL] Specify a path with -p or --path to download lyrics as a file.
