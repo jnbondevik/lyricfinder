@@ -4,7 +4,7 @@ setup(
     name="lyricfinder",
     version="1.0",
     packages=find_packages(),
-    install_requires=['selenium'],
+    install_requires=[],
     entry_points={
       'console_scripts': ['lyricfinder=source.main:main']
     }
