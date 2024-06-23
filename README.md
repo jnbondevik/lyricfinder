@@ -3,7 +3,8 @@ Simple script to retrieve lyrics for any song with selenium. Lyrics are printed 
 
 ## INSTALLATION
 1. ```git clone https://github.com/jnbondevik/lyricfinder.git```
-1. change directory to lyricfinder
+1. Change directory to lyricfinder
+1. ```pip3 install -r requirements.txt```
 1. ```pip3 install .```
 
 ## USAGE
