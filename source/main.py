@@ -12,7 +12,8 @@ def format_lyrics(lyrics: str):
 
 def get_lyrics(artist, song):
   ''' Scrapes AZLyrics to get lyrics. '''
-  artist, song = artist.replace(' ', ''), song.replace(' ', '')
+  artist = artist.replace(' ', '').lower() 
+  song = song.replace(' ', '').lower()
   url = f'https://www.azlyrics.com/lyrics/{artist}/{song}.html'
   try:
     response = requests.get(url)
