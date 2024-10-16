@@ -1,30 +1,21 @@
 import argparse
-from bs4 import BeautifulSoup
 from os import get_terminal_size
-import re
 import requests
 
-def format_lyrics(lyrics: str):
-  ''' Remove tags and whitespace. '''
-  lyrics = re.findall(r'(^[^<]+)', lyrics)
-  lyrics = ''.join([line for line in lyrics]).strip()
-  return termcenter(lyrics)
+def parse_args() -> dict:
+  ''' Retrieve command line arguments as a dict. '''
+  parser = argparse.ArgumentParser()
+  parser.add_argument("artist")
+  parser.add_argument("song")
+  return vars(parser.parse_args())
 
-def get_lyrics(artist, song):
-  ''' Scrapes AZLyrics to get lyrics. '''
-  artist = artist.replace(' ', '').lower() 
-  song = song.replace(' ', '').lower()
-  url = f'https://www.azlyrics.com/lyrics/{artist}/{song}.html'
-  try:
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    # locate lyrics
-    textsoup = soup.find('div', class_='col-xs-12 col-lg-8 text-center')
-    lyrics = textsoup.find('div', class_=None).text
-    return format_lyrics(lyrics)
-  except:
-    raise EOFError('Song not found.')
-
+def get_api(path: str) -> str:
+  with open(path) as infile:
+    for line in infile.readlines():
+      if not line.startswith(('#', '\n')):
+        return line
+  raise FileNotFoundError('Please provide API-key to source/apikey before installation.')
+      
 def termcenter(text):
   ''' Centers text-output. '''
   width = get_terminal_size(0).columns
@@ -35,14 +26,21 @@ def termcenter(text):
     midtext += ' '*spaces + line + '\n'
   return midtext
 
+def get_lyrics(artist, song):
+  ''' Calls the MusixMatch API to retrieve lyrics. '''
+  params = {
+    'q_track': song, 'q_artist': artist, 
+    'apikey': get_api('source/apikey')
+    }
+  url = 'https://api.musixmatch.com/ws/1.1/matcher.lyrics.get'
+  response = requests.get(url, params=params).json()
+  return response['message']['body']['lyrics']['lyrics_body']
+
 def main():
-  # parse arguments
-  parser = argparse.ArgumentParser()
-  parser.add_argument("artist")
-  parser.add_argument("song")
-  args = parser.parse_args()
-  # print lyrics
-  print(get_lyrics(args.artist, args.song))
+  args = parse_args() # get artist and song
+  print(
+    termcenter(get_lyrics(args['artist'], args['song']))
+    ) # print to stdout
 
 if __name__ == "__main__":
   main()
