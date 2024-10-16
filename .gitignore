@@ -3,4 +3,3 @@ env
 dist
 .DS_Store
 *.egg-info*
-source/apikey
