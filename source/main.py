@@ -1,4 +1,5 @@
 import argparse
+from importlib import resources
 from os import get_terminal_size
 import requests
 
@@ -10,8 +11,10 @@ def parse_args() -> dict:
   return vars(parser.parse_args())
 
 def get_api(path: str) -> str:
-  with open(path) as infile:
-    for line in infile.readlines():
+  # Get path after pip install
+  with resources.open_text('source', 'apikey') as file:
+  # with open(path) as file:
+    for line in file.readlines():
       if not line.startswith(('#', '\n')):
         return line
   raise FileNotFoundError('Please provide API-key to source/apikey before installation.')
@@ -34,7 +37,11 @@ def get_lyrics(artist, song):
     }
   url = 'https://api.musixmatch.com/ws/1.1/matcher.lyrics.get'
   response = requests.get(url, params=params).json()
-  return response['message']['body']['lyrics']['lyrics_body']
+  status = response['message']['header']['status_code']
+  if  status != 200:
+    raise requests.HTTPError('Song not found.')
+  lyrics = response['message']['body']['lyrics']['lyrics_body']
+  return lyrics
 
 def main():
   args = parse_args() # get artist and song

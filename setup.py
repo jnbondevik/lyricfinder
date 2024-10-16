@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="lyricfinder",
-    version="1.0",
+    name='lyricfinder',
+    version='2.0',
     packages=find_packages(),
+    package_data={'source': ['apikey']},
     install_requires=[
-      'argparse',
-      'bs4',
-      'requests'
+        'requests'
       ],
     entry_points={
       'console_scripts': ['lyricfinder=source.main:main']
