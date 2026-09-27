@@ -20,13 +20,14 @@ def get_lyrics(artist, song):
     url = f"https://www.azlyrics.com/lyrics/{artist}/{song}.html"
     try:
         response = requests.get(url)
+        response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
         # locate lyrics
         textsoup = soup.find("div", class_="col-xs-12 col-lg-8 text-center")
         lyrics = textsoup.find("div", class_=None).text
         return format_lyrics(lyrics)
-    except:
-        raise EOFError("Song not found.")
+    except requests.exceptions.HTTPError:
+        raise ValueError("Song not found.")
 
 
 def termcenter(text):
