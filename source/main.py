@@ -1,55 +1,61 @@
 import argparse
 import re
-from os import get_terminal_size
+import shutil
 
 import requests
-from bs4 import BeautifulSoup
 
 
-def format_lyrics(lyrics: str):
-    """Remove tags and whitespace."""
-    lyrics = re.findall(r"(^[^<]+)", lyrics)
-    lyrics = "".join([line for line in lyrics]).strip()
-    return termcenter(lyrics)
+def get_track(artist: str, song: str, session: requests.Session) -> str:
+    response = session.get(
+        "https://lrclib.net/api/get",
+        params={
+            "track_name": song,
+            "artist_name": artist,
+        },
+        timeout=10,
+    )
 
-
-def get_lyrics(artist, song):
-    """Scrapes AZLyrics to get lyrics."""
-    artist = artist.replace(" ", "").lower()
-    song = song.replace(" ", "").lower()
-    url = f"https://www.azlyrics.com/lyrics/{artist}/{song}.html"
     try:
-        response = requests.get(url)
         response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-        # locate lyrics
-        textsoup = soup.find("div", class_="col-xs-12 col-lg-8 text-center")
-        lyrics = textsoup.find("div", class_=None).text
-        return format_lyrics(lyrics)
-    except requests.exceptions.HTTPError:
-        raise ValueError("Song not found.")
+    except requests.RequestException as exc:
+        raise ValueError("Unable to retrieve lyrics.") from exc
+
+    json_content = response.json()
+
+    return {
+        "artist": json_content.get("artistName"),
+        "name": json_content.get("trackName"),
+        "lyrics": json_content.get("plainLyrics"),
+    }
 
 
-def termcenter(text):
-    """Centers text-output."""
-    width = get_terminal_size(0).columns
-    midtext = ""
-    for line in text.split("\n"):
-        remainder = width - len(line)
-        spaces = round(remainder / 2)
-        midtext += " " * spaces + line + "\n"
-    return midtext
+def center_text(text: str) -> str:
+    columns = shutil.get_terminal_size().columns
+
+    lines = []
+    for line in text.splitlines():
+        padding = max(0, (columns - len(line)) // 2)
+        lines.append(" " * padding + line)
+
+    return "\n".join(lines)
 
 
 def main():
-    # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("artist")
     parser.add_argument("song")
     args = parser.parse_args()
-    # print lyrics
-    print(get_lyrics(args.artist, args.song))
 
+    with requests.Session() as session:
+        session.headers["User-Agent"] = "lyricfinder/2026"
+        track = get_track(args.artist, args.song, session)
+
+    lyrics = (
+        f"{track['artist']}\n"
+        f"{track['name']}\n\n"
+        f"{track['lyrics']}"
+    )
+    print(center_text(lyrics))
 
 if __name__ == "__main__":
     main()
